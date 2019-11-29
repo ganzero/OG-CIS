@@ -5,6 +5,7 @@ public class Move {
     protected IChessPiece destroyedPiece;
     protected boolean castlingMove;
     protected boolean queeningMove;
+    protected boolean enPassantMove;
 
     public Move() {
     }
@@ -17,8 +18,19 @@ public class Move {
         this.destroyedPiece = null;
         this.castlingMove = false;
         this.queeningMove = false;
+        this.enPassantMove = false;
     }
 
+    public Move(int fromRow, int fromColumn, int toRow, int toColumn, IChessPiece destroyedPiece, boolean castlingMove, boolean queeningMove, boolean enPassantMove, boolean isCompleteMove) {
+        this.fromRow = fromRow;
+        this.fromColumn = fromColumn;
+        this.toRow = toRow;
+        this.toColumn = toColumn;
+        this.destroyedPiece = destroyedPiece;
+        this.castlingMove = castlingMove;
+        this.queeningMove = queeningMove;
+        this.enPassantMove = enPassantMove;
+    }
 
     public void setDestroyedPiece(IChessPiece destroyedPiece) {
         this.destroyedPiece = destroyedPiece;
@@ -32,6 +44,10 @@ public class Move {
         this.queeningMove = queeningMove;
     }
 
+    public void setEnPassantMove(boolean isEnPassantMove) {
+        this.enPassantMove = isEnPassantMove;
+    }
+
     @Override
     public String toString() {
         String s = "Move [fromRow=" + fromRow + ", fromColumn=" + fromColumn + ", toRow=" + toRow + ", toColumn=" + toColumn
@@ -39,9 +55,14 @@ public class Move {
         if (destroyedPiece != null)
             s += " Destroyed Piece = " + destroyedPiece.player() + " " + destroyedPiece.type();
 
-        if (!castlingMove)
+        if (castlingMove)
             s += " castlingMove " + castlingMove;
+
+        if (queeningMove)
+            s += " queeningMove " + queeningMove;
+
+        if (enPassantMove)
+            s += " enPassantMove " + enPassantMove;
         return s;
     }
-
 }

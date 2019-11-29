@@ -5,15 +5,18 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.TimeUnit;
 
-import static Project3.Player.BLACK;
-import static Project3.Player.WHITE;
+import static chess.Player.BLACK;
+import static chess.Player.WHITE;
 
 public class ChessPanel extends JPanel {
 
+    JPanel promotionPanel;
+    JRadioButton queenRadBtn, rookRadBtn, knightRadBtn, bishopRadBtn;
+    ButtonGroup promotionGroup;
     private JButton[][] board;
     private ChessModel model;
-
     private ImageIcon wRook;
     private ImageIcon wBishop;
     private ImageIcon wQueen;
@@ -26,16 +29,14 @@ public class ChessPanel extends JPanel {
     private ImageIcon bKing;
     private ImageIcon bPawn;
     private ImageIcon bKnight;
-
     private boolean firstTurnFlag;
     private int fromRow;
     private int toRow;
     private int fromCol;
     private int toCol;
-
     private JButton undoButton;
-    // declare other intance variables as needed
 
+    // declare other instance variables as needed
     private listener listener;
 
     public ChessPanel() {
@@ -75,6 +76,32 @@ public class ChessPanel extends JPanel {
         boardpanel.setPreferredSize(new Dimension(600, 600));
         add(buttonpanel, BorderLayout.SOUTH);
         firstTurnFlag = true;
+
+
+        promotionPanel = new JPanel();
+
+        queenRadBtn = new JRadioButton("Queen");
+        queenRadBtn.setSelected(true);
+        rookRadBtn = new JRadioButton("Rook");
+        knightRadBtn = new JRadioButton("Knight");
+        bishopRadBtn = new JRadioButton("Bishop");
+
+        promotionGroup = new ButtonGroup();
+        promotionGroup.add(queenRadBtn);
+        promotionGroup.add(rookRadBtn);
+        promotionGroup.add(knightRadBtn);
+        promotionGroup.add(bishopRadBtn);
+
+
+        promotionPanel.add(queenRadBtn);
+        promotionPanel.add(rookRadBtn);
+        promotionPanel.add(knightRadBtn);
+        promotionPanel.add(bishopRadBtn);
+
+        queenRadBtn.addActionListener(listener);
+        rookRadBtn.addActionListener(listener);
+        knightRadBtn.addActionListener(listener);
+        bishopRadBtn.addActionListener(listener);
     }
 
     private void setBackGroundColor(int r, int c) {
@@ -141,26 +168,26 @@ public class ChessPanel extends JPanel {
 
     private void createIcons() {
         // Sets the Image for white player pieces
-        wRook = new ImageIcon("./src/Project3/wRook.png");
-        wBishop = new ImageIcon("./src/Project3/wBishop.png");
-        wQueen = new ImageIcon("./src/Project3/wQueen.png");
-        wKing = new ImageIcon("./src/Project3/wKing.png");
-        wPawn = new ImageIcon("./src/Project3/wPawn.png");
-        wKnight = new ImageIcon("./src/Project3/wKnight.png");
+        wRook = new ImageIcon("src/chess/wRook.png");
+        wBishop = new ImageIcon("src/chess/wBishop.png");
+        wQueen = new ImageIcon("src/chess/wQueen.png");
+        wKing = new ImageIcon("src/chess/wKing.png");
+        wPawn = new ImageIcon("src/chess/wPawn.png");
+        wKnight = new ImageIcon("src/chess/wKnight.png");
 
-        bRook = new ImageIcon("./src/Project3/bRook.png");
-        bBishop = new ImageIcon("./src/Project3/bBishop.png");
-        bQueen = new ImageIcon("./src/Project3/bQueen.png");
-        bKing = new ImageIcon("./src/Project3/bKing.png");
-        bPawn = new ImageIcon("./src/Project3/bPawn.png");
-        bKnight = new ImageIcon("./src/Project3/bKnight.png");
-
-
+        // Sets the image for the black player pieces
+        bRook = new ImageIcon("src/chess/bRook.png");
+        bBishop = new ImageIcon("src/chess/bBishop.png");
+        bQueen = new ImageIcon("src/chess/bQueen.png");
+        bKing = new ImageIcon("src/chess/bKing.png");
+        bPawn = new ImageIcon("src/chess/bPawn.png");
+        bKnight = new ImageIcon("src/chess/bKnight.png");
     }
 
-    // method that updates the boardprivate void displayBoard() {
-    private void displayBoard(){
-        for(int r = 0;r<model.numRows();r++) {
+    // method that updates the board
+    private void displayBoard() {
+
+        for (int r = 0; r < model.numRows(); r++) {
             for (int c = 0; c < model.numColumns(); c++)
                 if (model.pieceAt(r, c) == null)
                     board[r][c].setIcon(null);
@@ -202,19 +229,17 @@ public class ChessPanel extends JPanel {
                         board[r][c].setIcon(bKing);
                 }
         }
-
         repaint();
     }
 
     // inner class that represents action listener for buttons
     private class listener implements ActionListener {
-        Border blackline = BorderFactory.createLineBorder(Color.black);    //FIXME highlight selected grid or darken border
 
         public void actionPerformed(ActionEvent event) {
             for (int r = 0; r < model.numRows(); r++)
-                for (int c = 0; c < model.numColumns(); c++)
-                    if (board[r][c] == event.getSource())
-                        if (firstTurnFlag == true) {
+                for (int c = 0; c < model.numColumns(); c++) {
+                    if (board[r][c] == event.getSource()) {
+                        if ((firstTurnFlag == true) && (model.pieceAt(r, c) != null)) {
                             fromRow = r;
                             fromCol = c;
                             firstTurnFlag = false;
@@ -223,36 +248,16 @@ public class ChessPanel extends JPanel {
                             toCol = c;
                             firstTurnFlag = true;
                             Move m = new Move(fromRow, fromCol, toRow, toCol);
-                            for (Move movePrinter : model.moveArrayList)
-                                System.out.println(movePrinter);
-//                            System.out.println(model.pieceAt(7, 4).toString());
-//                            System.out.println(model.pieceAt(7, 7).toString());
-
-                            //model.isValidMove(m);
-//                            System.out.println(model.pieceAt(7, 4).toString());
-//                            System.out.println(model.pieceAt(7, 7).toString());
-
-
-
                             if ((model.isValidMove(m))) {
-                                System.out.println("Got here");
                                 model.move(m);
                                 displayBoard();
                                 model.setNextPlayer();
-                                if (model.isComplete())
-                                    JOptionPane.showMessageDialog(null, "Checkmate!");
-                                else if (model.inCheck(model.currentPlayer())) {
-                                    if (model.currentPlayer() == WHITE)
-                                        JOptionPane.showMessageDialog(null, "White is in Check");
-                                    else
-                                        JOptionPane.showMessageDialog(null, "Black is in Check");
-                                }
-
-
+                                checkGameStatus();
+                                enableAI();
                             }
-                            System.out.println("Row: " + r + "\t" + "Column " + c);
-                            System.out.println(model.currentPlayer());
                         }
+                    }
+                }
             if (event.getSource() == undoButton) {
                 model.undo();
                 for (Move movePrinter : model.moveArrayList)
@@ -262,5 +267,46 @@ public class ChessPanel extends JPanel {
                 System.out.println(model.currentPlayer());
             }
         }
+
+        private void enableAI() {
+            model.AI();
+            displayBoard();
+            checkGameStatus();
+        }
+
+        private void checkGameStatus() {
+            if (model.isComplete())
+                JOptionPane.showMessageDialog(null, "Checkmate!");
+            else if (model.inCheck(model.currentPlayer())) {
+                if (model.currentPlayer() == WHITE)
+                    JOptionPane.showMessageDialog(null, "White is in Check");
+                else
+                    JOptionPane.showMessageDialog(null, "Black is in Check");
+            }
+        }
+
+//        private void promotionHelper(int row, int col) {
+//            int selection = JOptionPane.showOptionDialog(null, promotionPanel,
+//                    "Choose Your Promotion", JOptionPane.OK_OPTION, 0, null);
+//            System.out.println("Selection is " + selection);
+//           // model.setPromotionPiece(new Rook(model.pieceAt(row, col).player()));
+//        }
+
+//        private void promotionHelper(int row, int col) {
+//            if (((row == 0) || (row == model.board.length - 1)) && (model.pieceAt(row, col) instanceof Pawn)) {
+//                Object[] possibilities = {"Queen", "Rook", "Bishop", "Knight"};
+//                String s = (String) JOptionPane.showInputDialog(
+//                        null,
+//                        "Choose promotion",
+//                        "Promotion Dialog",
+//                        JOptionPane.PLAIN_MESSAGE,
+//                        null,
+//                        possibilities,
+//                        "Queen");
+//
+//                model.setPromotionPiece(s, row, col);
+//            }
+
     }
 }
+
